@@ -86,6 +86,17 @@ class Message(db.Model):
 # Create tables
 with app.app_context():
     db.create_all()
+    
+    # Create guest user if not exists
+    if not User.query.filter_by(username='guest').first():
+        guest = User(
+            username='guest',
+            email='guest@example.com',
+            api_key='guest_key',
+            password_hash='guest'
+        )
+        db.session.add(guest)
+        db.session.commit()
 
 # ══════════════════════════════════════════════════════════════════════
 # LLM SETUP
@@ -194,125 +205,6 @@ def login():
         
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-# ══════════════════════════════════════════════════════════════════════
-# CHAT ENDPOINTS
-# ══════════════════════════════════════════════════════════════════════
-
-@app.route('/api/chat', methods=['POST'])
-@jwt_required()
-def chat():
-    """Main chat endpoint with conversation history"""
-    try:
-        current_user_id = get_jwt_identity()
-        data = request.get_json()
-        
-        message = data.get('message')
-        conversation_id = data.get('conversation_id')
-        
-        if not message:
-            return jsonify({"error": "Missing message"}), 400
-        
-        if not model:
-            return jsonify({"error": "LLM not configured"}), 500
-        
-        # Get or create conversation
-        if conversation_id:
-            conversation = Conversation.query.filter_by(
-                id=conversation_id,
-                user_id=current_user_id
-            ).first()
-        else:
-            conversation = Conversation(
-                user_id=current_user_id,
-                title=message[:50] + "..." if len(message) > 50 else message
-            )
-            db.session.add(conversation)
-            db.session.flush()
-        
-        # Get conversation history
-        messages = Message.query.filter_by(
-            conversation_id=conversation.id
-        ).order_by(Message.timestamp).all()
-        
-        # Build chat history
-        history = []
-        for msg in messages:
-            history.append({
-                "role": msg.role,
-                "parts": [msg.content]
-            })
-        
-        # Generate response
-        chat_session = model.start_chat(history=history)
-        response = chat_session.send_message(message)
-        ai_response = response.text
-        
-        # Save messages
-        user_msg = Message(
-            conversation_id=conversation.id,
-            role='user',
-            content=message
-        )
-        assistant_msg = Message(
-            conversation_id=conversation.id,
-            role='assistant',
-            content=ai_response,
-            tokens=len(ai_response.split())
-        )
-        
-        db.session.add(user_msg)
-        db.session.add(assistant_msg)
-        db.session.commit()
-        
-        # Convert to HTML
-        html_response = markdown.markdown(ai_response, extensions=['fenced_code', 'tables'])
-        
-        return jsonify({
-            "response": ai_response,
-            "html": html_response,
-            "conversation_id": conversation.id,
-            "timestamp": datetime.utcnow().isoformat()
-        })
-        
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/conversations', methods=['GET'])
-@jwt_required()
-def get_conversations():
-    """Get user's conversation list"""
-    try:
-        current_user_id = get_jwt_identity()
-        conversations = Conversation.query.filter_by(
-            user_id=current_user_id
-        ).order_by(Conversation.updated_at.desc()).all()
-        
-        return jsonify({
-            "conversations": [{
-                "id": c.id,
-                "title": c.title,
-                "created_at": c.created_at.isoformat(),
-                "updated_at": c.updated_at.isoformat(),
-                "message_count": len(c.messages)
-            } for c in conversations]
-        })
-        
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/conversations/<int:conversation_id>', methods=['GET'])
-@jwt_required()
-def get_conversation(conversation_id):
-    """Get specific conversation with messages"""
-    try:
-        current_user_id = get_jwt_identity()
-        conversation = Conversation.query.filter_by(
-            id=conversation_id,
-            user_id=current_user_id
-        ).first()
-        
         if not conversation:
             return jsonify({"error": "Conversation not found"}), 404
         
@@ -535,10 +427,16 @@ if __name__ == '__main__':
         host='0.0.0.0',
         port=int(os.environ.get('PORT', 5000)),
         debug=os.environ.get('DEBUG', 'False') == 'True'
-    ) 
- @ a p p . r o u t e ( ' / s t r e a m l i t ' )  
- d e f   s t r e a m l i t _ r e d i r e c t ( ) :  
-         " " " R e d i r e c t   t o   S t r e a m l i t   U I " " "  
-         s t r e a m l i t _ u r l   =   o s . e n v i r o n . g e t ( ' S T R E A M L I T _ U R L ' ,   ' h t t p : / / l o c a l h o s t : 8 5 0 1 ' )  
-         r e t u r n   r e d i r e c t ( s t r e a m l i t _ u r l )  
+    )
+ 
+ @ a p p . r o u t e ( ' / s t r e a m l i t ' ) 
+ 
+ d e f   s t r e a m l i t _ r e d i r e c t ( ) : 
+ 
+         " " " R e d i r e c t   t o   S t r e a m l i t   U I " " " 
+ 
+         s t r e a m l i t _ u r l   =   o s . e n v i r o n . g e t ( ' S T R E A M L I T _ U R L ' ,   ' h t t p : / / l o c a l h o s t : 8 5 0 1 ' ) 
+ 
+         r e t u r n   r e d i r e c t ( s t r e a m l i t _ u r l ) 
+ 
  

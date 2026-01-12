@@ -310,10 +310,13 @@ def show_chat_page():
 def main():
     """Main application logic"""
     
+    # Auto-login as guest
     if not st.session_state.logged_in:
-        show_auth_page()
-    else:
-        show_chat_page()
+        st.session_state.logged_in = True
+        st.session_state.username = "Guest"
+        st.rerun()
+    
+    show_chat_page()
 
 if __name__ == "__main__":
     main()
