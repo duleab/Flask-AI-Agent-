@@ -16,4 +16,4 @@ RUN mkdir -p /app/instance && chmod 777 /app/instance
 EXPOSE 7860
 
 # Run the application using Gunicorn
-CMD ["gunicorn", "--worker-class", "eventlet", "-w", "1", "-b", "0.0.0.0:7860", "app:app"]
+CMD ["python", "app.py"]

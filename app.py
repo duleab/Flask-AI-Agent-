@@ -425,8 +425,9 @@ if __name__ == '__main__':
     socketio.run(
         app,
         host='0.0.0.0',
-        port=int(os.environ.get('PORT', 5000)),
-        debug=os.environ.get('DEBUG', 'False') == 'True'
+        port=7860,
+        allow_unsafe_werkzeug=True,
+        debug=False
     )
  
  @ a p p . r o u t e ( ' / s t r e a m l i t ' ) 
