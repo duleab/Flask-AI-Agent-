@@ -16,7 +16,7 @@ A production-ready AI agent system with Flask API backend, Streamlit frontend, W
 
 -  **RESTful API** - Clean Flask API architecture
 -  **Beautiful UI** - Streamlit frontend with modern design
--  **Authentication** - JWT tokens + API keys
+-  **Public Access** - Guest mode enabled (No Login Required)
 -  **Database** - SQLite (local) / PostgreSQL (production)
 -  **WebSocket** - Real-time streaming chat
 -  **History** - Persistent conversation storage
