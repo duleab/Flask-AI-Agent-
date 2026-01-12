@@ -3,7 +3,7 @@
 # ║  WebSocket • Database • Auth • Ready for Render deployment         ║
 # ╚════════════════════════════════════════════════════════════════════╝
 
-from flask import Flask, request, jsonify, render_template_string
+from flask import Flask, request, jsonify, render_template_string, redirect
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 from flask_sqlalchemy import SQLAlchemy
@@ -535,4 +535,10 @@ if __name__ == '__main__':
         host='0.0.0.0',
         port=int(os.environ.get('PORT', 5000)),
         debug=os.environ.get('DEBUG', 'False') == 'True'
-    )
+    ) 
+ @ a p p . r o u t e ( ' / s t r e a m l i t ' )  
+ d e f   s t r e a m l i t _ r e d i r e c t ( ) :  
+         " " " R e d i r e c t   t o   S t r e a m l i t   U I " " "  
+         s t r e a m l i t _ u r l   =   o s . e n v i r o n . g e t ( ' S T R E A M L I T _ U R L ' ,   ' h t t p : / / l o c a l h o s t : 8 5 0 1 ' )  
+         r e t u r n   r e d i r e c t ( s t r e a m l i t _ u r l )  
+ 
