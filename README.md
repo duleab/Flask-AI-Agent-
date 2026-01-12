@@ -1,3 +1,13 @@
+---
+title: Flask AI Backend
+emoji: 🤖
+colorFrom: purple
+colorTo: blue
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 #  Flask AI Agent - Complete Production System
 
 A production-ready AI agent system with Flask API backend, Streamlit frontend, WebSocket streaming, database persistence, and JWT authentication.
